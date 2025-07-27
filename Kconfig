@@ -1,0 +1,64 @@
+# Config options for prometheus sample application
+
+# Copyright (c) 2024 Mustafa Abdullah Kus, Sparse Technology
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "rehab robot application"
+
+config BT_CYW43XX_ALT
+    bool "Use alternative CYW43XX driver"
+    default n
+    help
+      Enable this option to use an alternative CYW43XX driver 
+	  implementation.
+
+
+config HAS_BLE_FSR
+	bool "Has BLE FSR"
+	default y
+	help
+	  Enable this option if the application has a BLE FSR
+	  (Force Sensitive Resistor) module. This module is used to
+	  measure the pressure applied to the user's foot. The data 
+	  from the FSR is sent over BLE to a connected device for 
+	  monitoring and analysis.
+
+config HAS_I2C_IMU
+	bool "Has I2C IMU"
+	default y
+	help
+	  Enable this option if the application has an I2C IMU
+	  (Inertial Measurement Unit) module. This module is used to
+	  measure the orientation and motion of the user's leg. The 
+	  data from the IMU is sent over I2C to a connected device for 
+	  monitoring and analysis.
+
+config HAS_UART_IMU
+	bool "Has UART IMU"
+	default y
+	help
+	  Enable this option if the application has a UART IMU
+	  (Inertial Measurement Unit) module. This module is used to
+	  measure the orientation and motion of the user's leg. The 
+	  data from the IMU is sent over UART to a connected device for 
+	  monitoring and analysis.
+
+config HAS_BLE_CONTROLLER
+	bool "Has BLE Controller"
+	default y
+	help
+	  Enable this option if the application has a BLE
+	  (Bluetooth Low Energy) controller module. This module is used 
+	  to manage the BLE communication between the application and 
+	  connected devices.
+
+config PAIRING_TIMEOUT
+	int "Pairing timeout"
+	default 180
+	range 1 600
+	help
+	  The timeout for pairing with a BLE device in seconds. If the 
+	  pairing process is not completed within this time, the 
+	  application will stop trying to pair.
+
+source "Kconfig.zephyr"

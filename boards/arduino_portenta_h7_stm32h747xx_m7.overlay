@@ -1,0 +1,190 @@
+/ {
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,uart-mcumgr = &usart1;
+		zephyr,bt-mon-uart = &usart1;
+		zephyr,bt-c2h-uart = &usart1;
+		zephyr,canbus = &fdcan1;        
+	};
+
+	aliases {
+		imu0 = &usart6;
+		imu1 = &uart8;
+		sw0 = &button0;
+		sw1 = &button1;
+	};
+	
+	gpio_keys {
+		compatible = "gpio-keys";
+		button0: button_0 {
+			gpios = <&gpiod 4 GPIO_ACTIVE_HIGH>;
+			label = "Push button switch SW0";
+		};
+		button1: button_1 {
+			gpios = <&gpiod 5 GPIO_ACTIVE_HIGH>;
+			label = "Push button switch SW1";
+		};
+	};
+
+	zephyr,user {
+		enable-system-gpios = <&gpiog 3 GPIO_ACTIVE_HIGH>;
+		enable-motor-gpios = <&gpioe 3 GPIO_ACTIVE_HIGH>;
+		io-channels = <&adc1 0>;
+		io-channel-names = "loadcell";
+	};
+
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs1: lfs1 {
+			compatible = "zephyr,fstab,littlefs";
+			read-size = <16>;
+			prog-size = <16>;
+			cache-size = <64>;
+			lookahead-size = <32>;
+			block-cycles = <512>;
+			partition = <&flash_disk>;
+			mount-point = "/lfs";
+			automount;
+		};
+	};
+/*
+	msc_disk0 {
+		compatible = "zephyr,flash-disk";
+		partition = <&flash_disk>;
+		disk-name = "NAND";
+		cache-size = <4096>;
+	};
+*/	
+};
+
+&sdmmc2 {
+	status = "okay";
+	pinctrl-0 = <&sdmmc2_d0_pb14 &sdmmc2_d1_pb15
+		     &sdmmc2_d2_pb3 &sdmmc2_d3_pb4
+		     &sdmmc2_ck_pd6 &sdmmc2_cmd_pd7>;
+	pinctrl-names = "default";
+/*cd-gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;*/
+};
+
+&usart1 {
+	status = "okay";
+	current-speed = <115200>;
+};
+
+&usart6 {
+	status = "okay";
+	current-speed = <115200>;
+};
+
+&uart8 {
+	status = "okay";
+	current-speed = <115200>;
+};
+
+&fdcan1 {
+	status = "okay";
+};
+
+&adc1 {
+	status = "okay";
+	pinctrl-0 = <&adc1_inp0_pa0_c>;
+	pinctrl-names = "default";
+	st,adc-clock-source = "SYNC";
+	st,adc-prescaler = <4>;
+	/*vref-mv = <10000>;*/
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	channel@0 {
+		reg = <0>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <16>;
+	};
+};
+
+
+&mac {
+	status = "disabled";    
+};
+
+
+&uart7 {
+	pinctrl-0 = <&uart7_tx_pa15 &uart7_rx_pf6
+		     &uart7_cts_pf9 &uart7_rts_pf8>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	hw-flow-control;
+	status = "okay";
+    fifo-enable;
+
+	bt_hci_uart: bt_hci_uart {
+		compatible = "zephyr,bt-hci-uart";
+		status = "okay";
+
+		murata-1dx {
+			compatible = "infineon,cyw43xxx-bt-hci";
+			bt-reg-on-gpios = <&gpioj 12 GPIO_ACTIVE_HIGH>;
+			bt-host-wake-gpios = <&gpioj 13 GPIO_ACTIVE_HIGH>;
+			bt-dev-wake-gpios = <&gpioj 14 GPIO_ACTIVE_HIGH>;
+            fw-download-speed = <115200>;
+            hci-operation-speed = <3000000>;
+		};
+	};
+};
+
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "bootloader";
+			reg = <0x00000000 0x00040000>;
+			read-only;
+		};
+		/* The arduino default bootloader occupies the address space 0x0 - 0x40000.
+		 * This way regardless of the user's choice to use the mcuboot bootloader,
+		 * applications will be located at 0x40000 which will be loaded by the
+		 * arduino bootloader.
+		 */
+		slot0_partition: partition@40000 {
+			label = "image-0";
+			reg = <0x00040000 0x000C0000>;
+		};
+	};
+};
+
+
+
+
+&quadspi {
+	status = "okay";
+
+	mx25l12833f: qspi-nor-flash@90000000 {
+		compatible = "st,stm32-qspi-nor";
+		status = "okay";
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = < 1 >;
+			#size-cells = < 1 >;
+
+			storage_partition: partition@0 {
+				label = "storage";
+				reg = < 0x0 DT_SIZE_K(512) >;
+			};
+
+			flash_disk: partition@f80000 {
+				label = "flashdisk";
+				reg = < 0x80000 DT_SIZE_K(15872) >;
+			};
+		};
+	};
+};
+
+

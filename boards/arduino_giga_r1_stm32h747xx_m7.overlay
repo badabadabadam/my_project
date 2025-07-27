@@ -1,0 +1,44 @@
+/ {
+	chosen {
+		/*zephyr,console = &cdc_acm_uart;
+		zephyr,shell-uart = &cdc_acm_uart;
+		zephyr,uart-mcumgr = &cdc_acm_uart;
+		zephyr,bt-mon-uart = &cdc_acm_uart;
+		zephyr,bt-c2h-uart = &cdc_acm_uart;        
+		*/
+	};
+};
+
+/*
+&zephyr_udc0 {
+    cdc_acm_uart: cdc_acm_uart {
+        compatible = "zephyr,cdc-acm-uart";
+        label = "Zephyr USB CDC-ACM";
+    };
+};
+*/
+
+&uart7 {
+	pinctrl-0 = <&uart7_tx_pf7 &uart7_rx_pa8
+		     &uart7_cts_pf9 &uart7_rts_pf8>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+	hw-flow-control;
+    fifo-enable;
+
+	bt_hci_uart: bt_hci_uart {
+		compatible = "zephyr,bt-hci-uart";
+		status = "okay";
+
+		murata-1dx {
+			compatible = "infineon,cyw43xxx-bt-hci";
+			bt-reg-on-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>;
+			bt-host-wake-gpios = <&gpiog 3 GPIO_ACTIVE_HIGH>;
+			bt-dev-wake-gpios = <&gpioh 7 GPIO_ACTIVE_HIGH>;
+			fw-download-speed = <115200>;
+            hci-operation-speed = <3000000>;
+		};
+	};
+};
+
